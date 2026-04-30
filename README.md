@@ -319,7 +319,7 @@ Delay peak offset from resonance: 0.000000 nm
 
 ---
 
-## Cascaded Rings and Vernier-Like Effects
+## Cascaded Rings
 
 Multiple rings with different radii create interleaved resonances and effective spectral spacing different from individual ring FSRs.
 
@@ -335,6 +335,86 @@ Passive cascade check: True
 ```
 
 ![Cascaded rings](cascaded_rings.png)
+
+---
+
+## Accelerated Three-Ring Vernier Demo
+
+MicroringLib includes an accelerated reduced model for Vernier-style cascaded all-pass rings.
+
+The total through response is modeled by multiplying the ring fields:
+
+$$
+H_{\mathrm{total}} = H_1 H_2 H_3
+$$
+
+and therefore
+
+$$
+T_{\mathrm{total}} = |H_1 H_2 H_3|^2.
+$$
+
+Using three rings:
+
+```text
+R1 = 10.0 um
+R2 = 11.0 um
+R3 = 12.0 um
+K1 = K2 = K3 = 0.025
+```
+
+Individual-ring metrics:
+
+```text
+Ring 1: FSR est = 9.104 nm | Q = 31365.5 | FWHM = 0.04938 nm | ER = 1.992 dB
+Ring 2: FSR est = 8.276 nm | Q = 34112.7 | FWHM = 0.04544 nm | ER = 2.193 dB
+Ring 3: FSR est = 7.587 nm | Q = 36861.8 | FWHM = 0.04207 nm | ER = 2.397 dB
+```
+
+Cascade result:
+
+```text
+Tracked cascade resonance: 1549.9597 nm
+Cascade loaded Q: 34225.61
+Cascade FWHM: 0.045287 nm
+Cascade local FSR: 0.917000 nm
+Cascade finesse: 20.249
+Cascade extinction ratio: 2.187 dB
+Detected cascade notches: 39
+Passive check T_total <= 1: True
+Minimum cascaded through power: 2.197164e-01
+Maximum rejection = 1 - T_total: 0.780284
+```
+
+Pairwise Vernier envelope estimates:
+
+```text
+Ring 1 vs Ring 2: 91.040 nm
+Ring 2 vs Ring 3: 91.040 nm
+Ring 1 vs Ring 3: 45.520 nm
+```
+
+Strongest common rejection region:
+
+```text
+Strongest cascaded notch near: 1560.0258 nm
+Ring 1 nearest resonance: 1560.0258 nm
+Ring 2 nearest resonance: 1560.0258 nm
+Ring 3 nearest resonance: 1560.0258 nm
+Mismatch ring1-ring2: 0.0000 nm
+Mismatch ring2-ring3: 0.0000 nm
+Mismatch ring1-ring3: 0.0000 nm
+```
+
+This demonstrates the Vernier mechanism: different FSRs produce resonance combs that periodically align and misalign. Strong rejection occurs when all three resonances align.
+
+![Three-ring Vernier individual spectra](vernier_3ring_individual_spectra.png)
+
+![Three-ring Vernier through spectrum](vernier_3ring_cascade_through_full.png)
+
+![Three-ring Vernier rejection envelope](vernier_3ring_rejection_envelope.png)
+
+![Three-ring Vernier zoom](vernier_3ring_zoom.png)
 
 ---
 
@@ -552,6 +632,7 @@ mrl.sfwm_pair_rate_relative_fast
 These functions are ideal for:
 
 - Monte Carlo studies
+- Vernier-effect sweeps
 - WDM sweeps
 - figure generation
 - reduced SFWM scaling
@@ -616,6 +697,7 @@ examples/demo3_thermal_tuning.py
 examples/demo4_cascaded_rings.py
 examples/demo_group_delay.py
 examples/demo_wdm_8ch_filter_bank_with_spacing.py
+examples/demo_vernier_three_ring_accelerated.py
 examples/demo_ring_modulator_eye.py
 examples/demo_kerr_bistability_integrated.py
 examples/demo_sic_sfwm_photon_pairs.py
@@ -626,7 +708,7 @@ examples/demo_ai_inverse_design_random.py
 Run from the repository root:
 
 ```bash
-PYTHONPATH=$PWD python3 examples/demo2_critical_coupling_metrics.py
+PYTHONPATH=$PWD python3 examples/demo_vernier_three_ring_accelerated.py
 ```
 
 ---
