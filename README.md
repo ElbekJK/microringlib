@@ -24,6 +24,34 @@ MicroringLib keeps field and power quantities separate, constructs couplers as u
 
 ---
 
+## Publication and Availability
+
+MicroringLib is publicly available as both a GitHub repository and an installable PyPI package.
+
+### GitHub
+
+Source code, examples, tests, and documentation:
+
+```text
+https://github.com/ElbekJK/microringlib
+```
+
+### PyPI
+
+Install directly with:
+
+```bash
+pip install microringlib
+```
+
+PyPI project page:
+
+```text
+https://pypi.org/project/microringlib/
+```
+
+---
+
 ## Installation
 
 From PyPI:
@@ -64,8 +92,12 @@ wl = np.linspace(1520e-9, 1580e-9, 20001)
 
 layers = [
     mrl.Layer(material="SiO2 lower", thickness=2e-6, n=1.444, alpha=0),
-    mrl.Layer(material="Si core", thickness=220e-9, n=3.476,
-              alpha=mrl.Layer.dbcm_to_npm(3.0)),
+    mrl.Layer(
+        material="Si core",
+        thickness=220e-9,
+        n=3.476,
+        alpha=mrl.Layer.dbcm_to_npm(3.0),
+    ),
     mrl.Layer(material="SiO2 upper", thickness=2e-6, n=1.444, alpha=0),
 ]
 
@@ -113,7 +145,7 @@ Many microring scripts can produce plausible spectra while still hiding physical
 
 MicroringLib avoids these problems by enforcing core constraints directly.
 
-### Coupler unitarity
+### Coupler Unitarity
 
 For a lossless coupler:
 
@@ -143,7 +175,7 @@ Example output:
 |t|^2 + |kappa|^2 = 1.000000
 ```
 
-### Passive add-drop conservation
+### Passive Add-Drop Conservation
 
 For passive add-drop rings:
 
@@ -159,7 +191,7 @@ min(P_thru + P_drop) = 0.97031454
 Passes passive constraint: True
 ```
 
-![Add-drop passive response](/real_life_microring_response.png)
+![Add-drop passive response](real_life_microring_response.png)
 
 ---
 
@@ -207,7 +239,7 @@ extinction_ratio_db: 36.403 dB
 num_resonances_detected: 6
 ```
 
-The library reports `notch_depth_factor` rather than incorrectly treating inverse notch transmission as true intracavity intensity enhancement.
+MicroringLib reports `notch_depth_factor` rather than incorrectly treating inverse notch transmission as true intracavity intensity enhancement.
 
 ---
 
@@ -229,18 +261,18 @@ K \uparrow
 Q_{\mathrm{loaded}} \downarrow
 $$
 
-Example sweep:
+Example tracked resonance sweep:
 
 ```text
 K = 0.005 -> Loaded Q ≈ 92108
 K = 0.080 -> Loaded Q ≈ 10028
 ```
 
-![Critical coupling spectra](/critical_coupling_sweep.png)
+![Critical coupling spectra](critical_coupling_sweep.png)
 
-![Critical coupling metrics](/critical_coupling_metrics.png)
+![Critical coupling metrics](critical_coupling_metrics.png)
 
-![Critical coupling secondary metrics](/critical_coupling_secondary_metrics.png)
+![Critical coupling secondary metrics](critical_coupling_secondary_metrics.png)
 
 ---
 
@@ -260,9 +292,9 @@ T = 40 C -> resonance = 1556.363 nm
 Approx tracked tuning slope = 0.0804 nm/C
 ```
 
-![Thermal tuning](/tracked_thermal_tuning.png)
+![Thermal tuning](tracked_thermal_tuning.png)
 
-This demonstrates physically realistic positive thermo-optic redshift for a silicon-dominated mode.
+This demonstrates a physically realistic positive thermo-optic redshift for a silicon-dominated mode.
 
 ---
 
@@ -283,7 +315,7 @@ Mean delay:    0.799897 ps
 Delay peak offset from resonance: 0.000000 nm
 ```
 
-![Group delay](/real_life_group_delay.png)
+![Group delay](real_life_group_delay.png)
 
 ---
 
@@ -302,7 +334,7 @@ Combined effective spacing ≈ 3.336 nm
 Passive cascade check: True
 ```
 
-![Cascaded rings](/cascaded_rings.png)
+![Cascaded rings](cascaded_rings.png)
 
 ---
 
@@ -332,11 +364,11 @@ Min spacing:  1.5706 nm
 Max spacing:  1.7476 nm
 ```
 
-![WDM 8-channel filter bank](/wdm_8ch_filter_bank.png)
+![WDM 8-channel filter bank](wdm_8ch_filter_bank.png)
 
-![WDM channel centers](/wdm_channel_centers.png)
+![WDM channel centers](wdm_channel_centers.png)
 
-![WDM channel spacing](/wdm_channel_spacing.png)
+![WDM channel spacing](wdm_channel_spacing.png)
 
 ---
 
@@ -369,7 +401,7 @@ ER mean: 4.55 dB
 ER std:  1.53 dB
 ```
 
-![Monte Carlo tolerance](/monte_carlo_tolerance.png)
+![Monte Carlo tolerance](monte_carlo_tolerance.png)
 
 ---
 
@@ -395,9 +427,10 @@ On-state transmission:  0.99998284
 OMA: 0.30976336
 Extinction ratio: 1.610 dB
 Bitrate: 25.00 Gb/s
+Electrical bandwidth: 18.00 GHz
 ```
 
-![Ring modulator eye diagram](/ring_modulator_eye.png)
+![Ring modulator eye diagram](ring_modulator_eye.png)
 
 ---
 
@@ -413,21 +446,33 @@ U =
 {(\kappa/2)^2 + (\Delta - gU)^2}
 $$
 
-Example result:
+The physically useful S-curve is obtained from the equivalent cubic steady-state relation.
+
+Updated reduced-model result:
 
 ```text
 Input power range: 0 to 80 mW
 kappa_ex / 2pi: 40 GHz
 kappa_0 / 2pi: 20 GHz
+kappa / 2pi: 60 GHz
 detuning / kappa: 3.000
-Max Kerr shift / kappa: 12.226625
-Max hysteresis difference: 0.860728
-Largest hysteresis near Pin = 1.302 mW
+
+Lower switching power: 0.635045 mW
+Upper switching power: 3.628624 mW
+Max Kerr shift / kappa: 6.706570
+Max hysteresis transmission difference: 0.817178
+Largest hysteresis near Pin = 0.701 mW
+T_up there:   0.974432
+T_down there: 0.157255
 ```
 
-![Kerr bistability](/kerr_bistability.png)
+![Kerr steady-state S-curve](kerr_steady_state_s_curve.png)
 
-This is a reduced model, not a full Lugiato–Lefever equation solver.
+![Kerr through-transmission hysteresis](kerr_through_transmission_hysteresis.png)
+
+The bistable region lies between approximately \(0.635\) mW and \(3.629\) mW. Within this window, the same input power can support different stable intracavity states depending on sweep direction.
+
+This is a reduced steady-state model, not a full Lugiato-Lefever equation solver.
 
 ---
 
@@ -443,7 +488,7 @@ R_{\mathrm{pair}}
 \gamma^2 P_p^2 \frac{Q^3}{R^2}
 $$
 
-Example SiC ring result:
+Example SiC add-drop ring result:
 
 ```text
 Tracked pump resonance: 1552.8770 nm
@@ -460,11 +505,13 @@ FWHM: 0.080235 nm
 FSR: 5.904000 nm
 Finesse: 73.584
 Drop ER: 33.421 dB
+Max P_through + P_drop: 0.99996309
+Passive check: True
 ```
 
-![SiC SFWM drop resonance](/sic_sfwm_drop_resonance.png)
+![SiC SFWM drop resonance](sic_sfwm_drop_resonance.png)
 
-![SiC SFWM pair-rate scaling](/sic_sfwm_pair_rate.png)
+![SiC SFWM pair-rate scaling](sic_sfwm_pair_rate.png)
 
 This is a relative pair-rate model, not an absolute calibrated quantum-source simulator.
 
@@ -492,6 +539,7 @@ fields, powers, t, kappa = mrl.single_mrr_thru_fast_batch(
 Available accelerated helpers include:
 
 ```python
+mrl.single_mrr_thru_fast
 mrl.single_mrr_thru_fast_batch
 mrl.single_mrr_add_drop_fast
 mrl.compute_resonance_metrics_fast
@@ -569,7 +617,7 @@ examples/demo4_cascaded_rings.py
 examples/demo_group_delay.py
 examples/demo_wdm_8ch_filter_bank_with_spacing.py
 examples/demo_ring_modulator_eye.py
-examples/demo_kerr_bistability.py
+examples/demo_kerr_bistability_integrated.py
 examples/demo_sic_sfwm_photon_pairs.py
 examples/demo_monte_carlo_tolerance.py
 examples/demo_ai_inverse_design_random.py
@@ -616,6 +664,7 @@ mrl.track_resonance_vs_parameter
 ### Fast models
 
 ```python
+mrl.single_mrr_thru_fast
 mrl.single_mrr_thru_fast_batch
 mrl.single_mrr_add_drop_fast
 mrl.compute_resonance_metrics_fast
@@ -630,6 +679,7 @@ mrl.sfwm_pair_rate_relative_fast
 mrl.KerrCavityParams
 mrl.kerr_hysteresis
 mrl.kerr_through_power
+mrl.kerr_params_from_Q
 ```
 
 ### Quantum
@@ -639,6 +689,7 @@ mrl.SFWMParams
 mrl.sfwm_pair_rate_relative
 mrl.sfwm_joint_spectral_amplitude_toy
 mrl.heralded_purity_from_jsa
+mrl.brightness_summary
 ```
 
 ---
@@ -674,11 +725,11 @@ PYTHONPATH=$PWD python3 -m pytest
 
 MicroringLib is intentionally lightweight and physically interpretable. Current limitations include:
 
-- scalar effective-index approximation
+- scalar effective-index approximation in reduced/fast models
 - no built-in full-vector eigenmode solver
 - coupling coefficients are user-specified rather than geometry-derived
 - nonlinear and quantum modules are reduced models
-- no calibrated full Lugiato–Lefever comb solver yet
+- no calibrated full Lugiato-Lefever comb solver yet
 - material database wrappers depend on optional external packages
 
 For high-fidelity electromagnetic design, use MicroringLib alongside tools such as Meep, Tidy3D, Lumerical, gdsfactory, SAX, or Simphony.
@@ -739,5 +790,14 @@ MIT License.
 **Elbek J. Keskinoglu**  
 Email: `ejkeskinoglu@connect.ust.hk`
 
-Repository:  
+Repository:
+
+```text
 https://github.com/ElbekJK/microringlib
+```
+
+PyPI:
+
+```text
+https://pypi.org/project/microringlib/
+```
