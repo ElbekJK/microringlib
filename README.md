@@ -236,11 +236,11 @@ K = 0.005 -> Loaded Q ≈ 92108
 K = 0.080 -> Loaded Q ≈ 10028
 ```
 
-![Critical coupling spectra](docs/figures/critical_coupling_sweep.png)
+![Critical coupling spectra](/critical_coupling_sweep.png)
 
-![Critical coupling metrics](docs/figures/critical_coupling_metrics.png)
+![Critical coupling metrics](/critical_coupling_metrics.png)
 
-![Critical coupling secondary metrics](docs/figures/critical_coupling_secondary_metrics.png)
+![Critical coupling secondary metrics](/critical_coupling_secondary_metrics.png)
 
 ---
 
@@ -260,7 +260,7 @@ T = 40 C -> resonance = 1556.363 nm
 Approx tracked tuning slope = 0.0804 nm/C
 ```
 
-![Thermal tuning](docs/figures/tracked_thermal_tuning.png)
+![Thermal tuning](/tracked_thermal_tuning.png)
 
 This demonstrates physically realistic positive thermo-optic redshift for a silicon-dominated mode.
 
@@ -283,7 +283,7 @@ Mean delay:    0.799897 ps
 Delay peak offset from resonance: 0.000000 nm
 ```
 
-![Group delay](docs/figures/real_life_group_delay.png)
+![Group delay](/real_life_group_delay.png)
 
 ---
 
@@ -302,7 +302,7 @@ Combined effective spacing ≈ 3.336 nm
 Passive cascade check: True
 ```
 
-![Cascaded rings](docs/figures/cascaded_rings.png)
+![Cascaded rings](/cascaded_rings.png)
 
 ---
 
@@ -332,11 +332,11 @@ Min spacing:  1.5706 nm
 Max spacing:  1.7476 nm
 ```
 
-![WDM 8-channel filter bank](docs/figures/wdm_8ch_filter_bank.png)
+![WDM 8-channel filter bank](/wdm_8ch_filter_bank.png)
 
-![WDM channel centers](docs/figures/wdm_channel_centers.png)
+![WDM channel centers](/wdm_channel_centers.png)
 
-![WDM channel spacing](docs/figures/wdm_channel_spacing.png)
+![WDM channel spacing](/wdm_channel_spacing.png)
 
 ---
 
@@ -369,7 +369,7 @@ ER mean: 4.55 dB
 ER std:  1.53 dB
 ```
 
-![Monte Carlo tolerance](docs/figures/monte_carlo_tolerance.png)
+![Monte Carlo tolerance](/monte_carlo_tolerance.png)
 
 ---
 
@@ -397,7 +397,7 @@ Extinction ratio: 1.610 dB
 Bitrate: 25.00 Gb/s
 ```
 
-![Ring modulator eye diagram](docs/figures/ring_modulator_eye.png)
+![Ring modulator eye diagram](/ring_modulator_eye.png)
 
 ---
 
@@ -425,7 +425,7 @@ Max hysteresis difference: 0.860728
 Largest hysteresis near Pin = 1.302 mW
 ```
 
-![Kerr bistability](docs/figures/kerr_bistability.png)
+![Kerr bistability](/kerr_bistability.png)
 
 This is a reduced model, not a full Lugiato–Lefever equation solver.
 
@@ -462,9 +462,9 @@ Finesse: 73.584
 Drop ER: 33.421 dB
 ```
 
-![SiC SFWM drop resonance](docs/figures/sic_sfwm_drop_resonance.png)
+![SiC SFWM drop resonance](/sic_sfwm_drop_resonance.png)
 
-![SiC SFWM pair-rate scaling](docs/figures/sic_sfwm_pair_rate.png)
+![SiC SFWM pair-rate scaling](/sic_sfwm_pair_rate.png)
 
 This is a relative pair-rate model, not an absolute calibrated quantum-source simulator.
 
