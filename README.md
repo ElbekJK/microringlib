@@ -1,113 +1,60 @@
-# microringlib
+# MicroringLib
 
-**microringlib** is a physics-first Python library for integrated-photonics microring resonators. It provides physically constrained couplers, passive power checks, resonance metrics, material-dispersion backends, accelerated analytical sweeps, nonlinear reduced models, and quantum-photonics scaling demos.
+**MicroringLib** is a physics-first Python library for simulating integrated photonic microring resonators.
 
-Author: **Elbek J Keskinoglu**  
-Email: **ejkeskinoglu@connect.ust.hk**
+It is designed for fast, physically interpretable modeling of:
 
----
-
-## Why this library?
-
-Many research scripts can generate plausible microring spectra, but they often leave important physical checks to post-processing. `microringlib` tries to make the safe behavior the default:
-
-- lossless couplers satisfy `|t|^2 + |kappa|^2 = 1`,
-- passive add-drop rings satisfy `P_thru + P_drop <= 1`,
-- field and power responses are kept separate,
-- resonance metrics have explicit physical meaning,
-- parameter sweeps can track the same resonance order,
-- fast analytical helpers are available for large sweeps and Monte Carlo studies.
-
-The library is intentionally lightweight. It is not a replacement for full-wave tools such as Meep or Tidy3D, nor for layout/PDK tools such as gdsfactory. Instead, it sits between analytic theory and large simulation frameworks: fast enough for design exploration, explicit enough for physical interpretation.
-
----
-
-## Main features
-
-### Core photonics
-
-- straight waveguide transmission
-- single-bus all-pass microring resonators
+- straight waveguides
+- single-bus microring resonators
 - add-drop microring resonators
-- cascaded add-drop rings
-- WDM ring filter banks
-- group-delay / slow-light extraction
-- thermal tuning via `dn_dT`
+- cascaded rings
+- WDM filter banks
+- thermal tuning
+- group delay / slow-light behavior
+- fabrication Monte Carlo tolerance
+- ring modulator eye diagrams
+- reduced Kerr bistability
+- reduced SFWM photon-pair scaling
 
-### Physics-first checks
+The main design goal is simple:
 
-- unitary coupler construction from power coupling `K`
-- passive add-drop energy-budget validation
-- field/power separation
-- named output ports for through/drop devices
+> **Do not just generate spectra — enforce the physics.**
 
-### Resonance metrics
-
-- resonance wavelength
-- FWHM linewidth
-- FSR / peak spacing
-- loaded Q
-- finesse
-- extinction ratio
-- target-wavelength resonance tracking
-- resonance counting for sanity checks
-
-### Material models
-
-- constant refractive index
-- tabulated `n(lambda)` and `k(lambda)`
-- function-backed complex index
-- optional `refractiveindex` wrapper
-- optional PyOptik object adapter
-- material absorption from `alpha = 4*pi*k/lambda`
-
-### Accelerated reduced models
-
-The `microringlib.fast` helpers are vectorized analytical shortcuts for large sweeps:
-
-- `single_mrr_thru_fast`
-- `single_mrr_thru_fast_batch`
-- `single_mrr_add_drop_fast`
-- `resonance_metrics_fast`
-- `monte_carlo_resonance_formula_fast`
-- `sfwm_pair_rate_relative_fast`
-
-These helpers use user-supplied `n_eff` and loss approximations. Use the full `transfer.py` APIs when you want the layer/mode workflow; use `fast.py` for rapid figure generation, parameter sweeps, and Monte Carlo studies.
-
-### Research extensions
-
-- reduced Kerr bistability model in `nonlinear.py`
-- reduced SFWM photon-pair scaling model in `quantum.py`
-- frequency-comb toy demo
-- ring-modulator eye diagram demo
-- fabrication-tolerance Monte Carlo demo
+MicroringLib keeps field and power quantities separate, constructs couplers as unitary scattering elements, checks passive energy conservation, and reports physically meaningful resonance metrics such as FSR, FWHM, loaded \(Q\), finesse, extinction ratio, and group delay.
 
 ---
 
 ## Installation
 
-From the project root:
+From PyPI:
 
 ```bash
+pip install microringlib
+```
+
+For development:
+
+```bash
+git clone https://github.com/ElbekJK/microringlib.git
+cd microringlib
 pip install -e .
 ```
 
-Optional material database support:
+Run tests:
 
 ```bash
-pip install -e ".[materials]"
+PYTHONPATH=$PWD python3 -m pytest
 ```
 
-Development install:
+Current validation result:
 
-```bash
-pip install -e ".[dev,materials]"
-pytest -q
+```text
+126 passed
 ```
 
 ---
 
-## Quick start: through-port microring
+## Quick Start
 
 ```python
 import numpy as np
@@ -118,70 +65,16 @@ wl = np.linspace(1520e-9, 1580e-9, 20001)
 layers = [
     mrl.Layer(material="SiO2 lower", thickness=2e-6, n=1.444, alpha=0),
     mrl.Layer(material="Si core", thickness=220e-9, n=3.476,
-              dn_dT=1.86e-4, alpha=mrl.Layer.dbcm_to_npm(2.0)),
+              alpha=mrl.Layer.dbcm_to_npm(3.0)),
     mrl.Layer(material="SiO2 upper", thickness=2e-6, n=1.444, alpha=0),
 ]
 
 ring = mrl.RingGeometry(radius=10e-6)
-c = mrl.Coupler.from_power_coupling(0.01)
 
-res = mrl.single_mrr_thru(
-    wavelengths=wl,
-    resonator=ring,
-    layers=layers,
-    t=c.t,
-    kappa=c.kappa,
-    polarization="TE",
-)
-
-metrics = mrl.compute_resonance_metrics(
-    wl,
-    res.power,
-    target_wavelength=1550e-9,
-)
-
-print(metrics["resonance_wavelength"] * 1e9, "nm")
-print(metrics["loaded_Q"])
-```
-
----
-
-## Fast sweep example
-
-```python
-import numpy as np
-import microringlib as mrl
-
-wl = np.linspace(1520e-9, 1580e-9, 20001)
-K_values = np.array([0.005, 0.01, 0.02, 0.04, 0.08])
-
-fields, powers, t_values, kappa_values = mrl.single_mrr_thru_fast_batch(
-    wavelengths=wl,
-    radius=10e-6,
-    n_eff=3.476,
-    alpha_dbcm=3.0,
-    K_values=K_values,
-)
-
-for K, power in zip(K_values, powers):
-    m = mrl.resonance_metrics_fast(
-        wl,
-        power,
-        target_wavelength=1555e-9,
-        kind="dips",
-    )
-    print(K, m["loaded_Q"], m["fwhm"] * 1e9)
-```
-
----
-
-## Add-drop passivity example
-
-```python
 c1 = mrl.Coupler.from_power_coupling(0.12)
 c2 = mrl.Coupler.from_power_coupling(0.12)
 
-out = mrl.single_mrr_add_drop(
+res = mrl.single_mrr_add_drop(
     wavelengths=wl,
     resonator=ring,
     layers=layers,
@@ -189,116 +82,649 @@ out = mrl.single_mrr_add_drop(
     kappa1=c1.kappa,
     t2=c2.t,
     kappa2=c2.kappa,
+    polarization="TE",
     overlap_factors=[0.05, 0.90, 0.05],
 )
 
-thru = out.ports["through"]["power"]
-drop = out.ports["drop"]["power"]
+thru = res.ports["through"]["power"]
+drop = res.ports["drop"]["power"]
 
 print(np.max(thru + drop))
 ```
 
-A passive simulation should report a maximum total output power no larger than 1, up to numerical tolerance.
+Expected passive behavior:
+
+```text
+P_thru + P_drop <= 1
+```
 
 ---
 
-## Material backends
+## Why Physics-First?
 
-### Constant material
+Many microring scripts can produce plausible spectra while still hiding physical issues such as:
 
-```python
-si = mrl.ConstantMaterial("Si", n=3.476, k=0.0, dn_dT=1.86e-4)
-sio2 = mrl.ConstantMaterial("SiO2", n=1.444, k=0.0, dn_dT=1.0e-5)
+- non-unitary couplers
+- passive devices with output power greater than input power
+- inconsistent field/power normalization
+- fragile resonance detection
+- thermal sweeps jumping between resonance orders
+- misleading metric names such as treating notch depth as intracavity enhancement
 
-layers = [
-    mrl.Layer("SiO2 lower", 2e-6, material_model=sio2),
-    mrl.Layer("Si core", 220e-9, material_model=si,
-              alpha=mrl.Layer.dbcm_to_npm(2.0)),
-    mrl.Layer("SiO2 upper", 2e-6, material_model=sio2),
-]
-```
+MicroringLib avoids these problems by enforcing core constraints directly.
 
-### Tabulated material
+### Coupler unitarity
 
-```python
-wl_table = np.array([1.50, 1.55, 1.60]) * 1e-6
-n_table = np.array([3.485, 3.476, 3.468])
+For a lossless coupler:
 
-si_tab = mrl.TabulatedMaterial(
-    name="Si measured",
-    wavelength_m=wl_table,
-    n=n_table,
-    dn_dT=1.86e-4,
-)
-```
+\[
+|t|^2 + |\kappa|^2 = 1
+\]
 
-### Optional refractive-index database adapter
+MicroringLib constructs couplers from the power coupling coefficient:
+
+\[
+K = |\kappa|^2
+\]
 
 ```python
-si = mrl.RefractiveIndexInfoMaterial(
-    shelf="main",
-    book="Si",
-    page="Green-2008",
-    dn_dT=1.86e-4,
-)
+c = mrl.Coupler.from_power_coupling(0.12)
+
+print(abs(c.t)**2)
+print(abs(c.kappa)**2)
+print(abs(c.t)**2 + abs(c.kappa)**2)
 ```
 
-The optional package is imported lazily. If it is not installed, the adapter raises a clear `ImportError` only when evaluated.
+Example output:
+
+```text
+|t|^2 = 0.880000
+|kappa|^2 = 0.120000
+|t|^2 + |kappa|^2 = 1.000000
+```
+
+### Passive add-drop conservation
+
+For passive add-drop rings:
+
+\[
+P_{\mathrm{thru}}(\lambda) + P_{\mathrm{drop}}(\lambda) \le 1
+\]
+
+Example result:
+
+```text
+max(P_thru + P_drop) = 0.99987534
+min(P_thru + P_drop) = 0.97031454
+Passes passive constraint: True
+```
+
+![Add-drop passive response](docs/figures/real_life_microring_response.png)
 
 ---
 
-## Included research demos
+## Main Features
+
+| Feature | Description |
+|---|---|
+| `Layer` | Optical layer with refractive index, loss, thermo-optic coefficient, or material backend |
+| `RingGeometry` | Circular ring geometry |
+| `Coupler` | Unitary coupler construction from power coupling |
+| `single_mrr_thru` | Single-bus through-port microring |
+| `single_mrr_add_drop` | Add-drop microring with named ports |
+| `cascaded_mrrs_add_drop` | Cascaded microring models |
+| `compute_resonance_metrics` | FSR, FWHM, loaded \(Q\), finesse, extinction ratio |
+| `compute_group_delay` | Phase-derived group delay |
+| `track_resonance_vs_parameter` | Resonance-order tracking during sweeps |
+| `materials.py` | Constant, tabulated, function, refractive-index style material backends |
+| `fast.py` | Accelerated reduced models for high-volume sweeps |
+| `nonlinear.py` | Reduced Kerr bistability models |
+| `quantum.py` | Reduced SFWM photon-pair scaling tools |
+
+---
+
+## Resonance Metrics
+
+MicroringLib extracts physically meaningful quantities:
+
+\[
+Q_{\mathrm{loaded}} = \frac{\lambda_0}{\Delta \lambda_{\mathrm{FWHM}}}
+\]
+
+\[
+\mathcal{F} = \frac{\mathrm{FSR}}{\Delta \lambda_{\mathrm{FWHM}}}
+\]
+
+Example output:
+
+```text
+resonance_wavelength: 1523.558000 nm
+fwhm: 0.424834 nm
+fsr: 10.683000 nm
+loaded_Q: 3586.239
+finesse: 25.146
+extinction_ratio_db: 36.403 dB
+num_resonances_detected: 6
+```
+
+The library reports `notch_depth_factor` rather than incorrectly treating inverse notch transmission as true intracavity intensity enhancement.
+
+---
+
+## Critical Coupling and Loaded Q
+
+The coupling coefficient \(K = |\kappa|^2\) controls the resonance linewidth and extinction.
+
+As coupling increases:
+
+\[
+K \uparrow
+\quad \Rightarrow \quad
+\Delta \lambda_{\mathrm{FWHM}} \uparrow
+\]
+
+\[
+K \uparrow
+\quad \Rightarrow \quad
+Q_{\mathrm{loaded}} \downarrow
+\]
+
+Example sweep:
+
+```text
+K = 0.005 -> Loaded Q ≈ 92108
+K = 0.080 -> Loaded Q ≈ 10028
+```
+
+![Critical coupling spectra](docs/figures/critical_coupling_sweep.png)
+
+![Critical coupling metrics](docs/figures/critical_coupling_metrics.png)
+
+![Critical coupling secondary metrics](docs/figures/critical_coupling_secondary_metrics.png)
+
+---
+
+## Thermal Tuning
+
+MicroringLib supports thermo-optic tuning through:
+
+\[
+n(T) = n_0 + \frac{dn}{dT}(T - T_0)
+\]
+
+Example tracked resonance shift:
+
+```text
+T = 20 C -> resonance = 1554.755 nm
+T = 40 C -> resonance = 1556.363 nm
+Approx tracked tuning slope = 0.0804 nm/C
+```
+
+![Thermal tuning](docs/figures/tracked_thermal_tuning.png)
+
+This demonstrates physically realistic positive thermo-optic redshift for a silicon-dominated mode.
+
+---
+
+## Group Delay and Slow Light
+
+The group delay is computed from the field phase:
+
+\[
+\tau_g = -\frac{d\phi}{d\omega}
+\]
+
+Example result:
+
+```text
+Minimum delay: 0.019731 ps
+Maximum delay: 28.514953 ps
+Mean delay:    0.799897 ps
+Delay peak offset from resonance: 0.000000 nm
+```
+
+![Group delay](docs/figures/real_life_group_delay.png)
+
+---
+
+## Cascaded Rings and Vernier-Like Effects
+
+Multiple rings with different radii create interleaved resonances and effective spectral spacing different from individual ring FSRs.
+
+Example result:
+
+```text
+Ring 1 FSR estimate = 9.104 nm
+Ring 2 FSR estimate = 8.926 nm
+Ring 3 FSR estimate = 8.754 nm
+
+Combined effective spacing ≈ 3.336 nm
+Passive cascade check: True
+```
+
+![Cascaded rings](docs/figures/cascaded_rings.png)
+
+---
+
+## WDM 8-Channel Filter Bank
+
+MicroringLib can model WDM filter banks by sweeping ring radii.
+
+Example extracted channel centers:
+
+```text
+CH1: 1543.8159 nm
+CH2: 1545.5635 nm
+CH3: 1547.2796 nm
+CH4: 1548.9657 nm
+CH5: 1550.6218 nm
+CH6: 1552.2479 nm
+CH7: 1553.8469 nm
+CH8: 1555.4175 nm
+```
+
+Channel spacing:
+
+```text
+Mean spacing: 1.6574 nm
+Std spacing:  0.0589 nm
+Min spacing:  1.5706 nm
+Max spacing:  1.7476 nm
+```
+
+![WDM 8-channel filter bank](docs/figures/wdm_8ch_filter_bank.png)
+
+![WDM channel centers](docs/figures/wdm_channel_centers.png)
+
+![WDM channel spacing](docs/figures/wdm_channel_spacing.png)
+
+---
+
+## Fabrication Monte Carlo Tolerance
+
+The accelerated utilities can run large Monte Carlo tolerance studies.
+
+Example perturbations:
+
+\[
+R \rightarrow R + \delta R
+\]
+
+\[
+n_{\mathrm{Si}} \rightarrow n_{\mathrm{Si}} + \delta n
+\]
+
+Fast vectorized example:
+
+```text
+Trials: 100000
+sigma_R = 5 nm
+sigma_n = 1e-4
+
+Resonance mean: 1548.9991 nm
+Resonance std:  0.7027 nm
+Q mean: 58843.69
+Q std:  2408.40
+ER mean: 4.55 dB
+ER std:  1.53 dB
+```
+
+![Monte Carlo tolerance](docs/figures/monte_carlo_tolerance.png)
+
+---
+
+## Ring Modulator Eye Diagram
+
+A ring modulator shifts the resonance relative to a fixed laser:
+
+\[
+\Delta n_{\mathrm{eff}}
+\rightarrow
+\Delta \lambda_{\mathrm{res}}
+\rightarrow
+\Delta P_{\mathrm{thru}}
+\]
+
+Example result:
+
+```text
+Resonance wavelength: 1555.157839 nm
+Laser wavelength:    1555.168479 nm
+Off-state transmission: 0.69021948
+On-state transmission:  0.99998284
+OMA: 0.30976336
+Extinction ratio: 1.610 dB
+Bitrate: 25.00 Gb/s
+```
+
+![Ring modulator eye diagram](docs/figures/ring_modulator_eye.png)
+
+---
+
+## Kerr Nonlinear Bistability
+
+MicroringLib includes reduced single-mode Kerr cavity tools.
+
+The reduced steady-state model is:
+
+\[
+U =
+\frac{\kappa_{\mathrm{ex}}P_{\mathrm{in}}}
+{(\kappa/2)^2 + (\Delta - gU)^2}
+\]
+
+Example result:
+
+```text
+Input power range: 0 to 80 mW
+kappa_ex / 2pi: 40 GHz
+kappa_0 / 2pi: 20 GHz
+detuning / kappa: 3.000
+Max Kerr shift / kappa: 12.226625
+Max hysteresis difference: 0.860728
+Largest hysteresis near Pin = 1.302 mW
+```
+
+![Kerr bistability](docs/figures/kerr_bistability.png)
+
+This is a reduced model, not a full Lugiato–Lefever equation solver.
+
+---
+
+## SiC SFWM Photon-Pair Scaling
+
+MicroringLib includes reduced spontaneous four-wave mixing scaling tools.
+
+A simplified relative trend is:
+
+\[
+R_{\mathrm{pair}}
+\propto
+\gamma^2 P_p^2 \frac{Q^3}{R^2}
+\]
+
+Example SiC ring result:
+
+```text
+Tracked pump resonance: 1552.8770 nm
+Loaded Q: 19354.21
+Ring radius: 25.00 um
+Relative pair rate at 20 mW: 1.000
+
+n_eff approximation: 2.6000
+Propagation loss: 1.000 dB/cm
+K1: 0.0400
+K2: 0.0400
+Detected resonances: 10
+FWHM: 0.080235 nm
+FSR: 5.904000 nm
+Finesse: 73.584
+Drop ER: 33.421 dB
+```
+
+![SiC SFWM drop resonance](docs/figures/sic_sfwm_drop_resonance.png)
+
+![SiC SFWM pair-rate scaling](docs/figures/sic_sfwm_pair_rate.png)
+
+This is a relative pair-rate model, not an absolute calibrated quantum-source simulator.
+
+---
+
+## Accelerated Models
+
+The `fast.py` module provides analytical reduced models for high-volume sweeps:
+
+```python
+import numpy as np
+import microringlib as mrl
+
+wl = np.linspace(1540e-9, 1560e-9, 1001)
+
+fields, powers, t, kappa = mrl.single_mrr_thru_fast_batch(
+    wavelengths=wl,
+    radius=10e-6,
+    n_eff=3.476,
+    alpha_dbcm=2.0,
+    K_values=[0.01, 0.02, 0.04],
+)
+```
+
+Available accelerated helpers include:
+
+```python
+mrl.single_mrr_thru_fast_batch
+mrl.single_mrr_add_drop_fast
+mrl.compute_resonance_metrics_fast
+mrl.compute_peak_metrics_fast
+mrl.monte_carlo_ring_tolerance_fast
+mrl.monte_carlo_resonance_formula_fast
+mrl.sfwm_pair_rate_relative_fast
+```
+
+These functions are ideal for:
+
+- Monte Carlo studies
+- WDM sweeps
+- figure generation
+- reduced SFWM scaling
+- rapid design-space exploration
+
+They are not replacements for the full physics-first transfer functions when detailed layer modeling is required.
+
+---
+
+## Material Backends
+
+MicroringLib supports several material styles:
+
+```python
+mrl.ConstantMaterial(...)
+mrl.TabulatedMaterial(...)
+mrl.FunctionMaterial(...)
+mrl.RefractiveIndexInfoMaterial(...)
+mrl.PyOptikMaterial(...)
+```
+
+Complex refractive index:
+
+\[
+\tilde{n}(\lambda,T) = n(\lambda,T) + ik(\lambda,T)
+\]
+
+Material absorption:
+
+\[
+\alpha_{\mathrm{power}}(\lambda) = \frac{4\pi k(\lambda)}{\lambda}
+\]
+
+This allows simulations to include wavelength-dependent dispersion and absorption.
+
+---
+
+## Comparison with Existing Photonics Tools
+
+MicroringLib is not designed to replace full-wave solvers or layout tools. It fills a lightweight, physically interpretable microring-focused role.
+
+| Tool | Main strength | Typical role | Relation to MicroringLib |
+|---|---|---|---|
+| gdsfactory | Layout and PDK workflow | Parametric photonic layout and tapeout workflows | Complementary: layout-first |
+| Meep | Open-source FDTD | Full-wave electromagnetic simulation | Higher fidelity, heavier compute |
+| Tidy3D | Python FDTD workflow | Programmatic FDTD and post-processing | Higher fidelity, commercial/cloud workflow |
+| SAX / Simphony | S-parameter circuits | Photonic circuit simulation and optimization | More general circuit-level framework |
+| MicroringLib | Physics-first ring modeling | Fast spectra, metrics, WDM, thermal, Monte Carlo, demos | Ring-focused and interpretable |
+
+MicroringLib is best viewed as a bridge between analytic microring theory and large simulation frameworks.
+
+---
+
+## Example Scripts
+
+The repository includes examples such as:
+
+```text
+examples/demo1_add_drop_validation.py
+examples/demo2_critical_coupling_metrics.py
+examples/demo3_thermal_tuning.py
+examples/demo4_cascaded_rings.py
+examples/demo_group_delay.py
+examples/demo_wdm_8ch_filter_bank_with_spacing.py
+examples/demo_ring_modulator_eye.py
+examples/demo_kerr_bistability.py
+examples/demo_sic_sfwm_photon_pairs.py
+examples/demo_monte_carlo_tolerance.py
+examples/demo_ai_inverse_design_random.py
+```
 
 Run from the repository root:
 
 ```bash
-PYTHONPATH=. python demo2_critical_coupling_metrics.py
-PYTHONPATH=. python demo_wdm_8ch_filter_bank_with_spacing.py
-PYTHONPATH=. python demo_monte_carlo_tolerance.py
-PYTHONPATH=. python demo_ring_modulator_eye.py
-PYTHONPATH=. python demo_kerr_bistability.py
-PYTHONPATH=. python demo_sic_sfwm_photon_pairs.py
+PYTHONPATH=$PWD python3 examples/demo2_critical_coupling_metrics.py
 ```
 
-Important generated figures include:
+---
 
-- `real_life_microring_response.png`
-- `critical_coupling_sweep.png`
-- `critical_coupling_metrics.png`
-- `critical_coupling_secondary_metrics.png`
-- `tracked_thermal_tuning.png`
-- `real_life_group_delay.png`
-- `wdm_8ch_filter_bank.png`
-- `wdm_channel_centers.png`
-- `wdm_channel_spacing.png`
-- `monte_carlo_tolerance.png`
-- `monte_carlo_q_vs_resonance.png`
-- `ring_modulator_eye.png`
-- `kerr_bistability.png`
-- `sic_ring_drop_resonance.png`
-- `sic_sfwm_pair_rate.png`
+## API Overview
+
+### Core classes
+
+```python
+mrl.Layer
+mrl.RingGeometry
+mrl.Coupler
+mrl.TransmissionResult
+```
+
+### Transfer models
+
+```python
+mrl.straight_waveguide
+mrl.single_mrr_thru
+mrl.single_mrr_add_drop
+mrl.cascaded_mrrs_add_drop
+```
+
+### Metrics
+
+```python
+mrl.compute_resonance_metrics
+mrl.compute_group_delay
+mrl.find_resonances
+mrl.fit_lorentzian
+mrl.track_resonance_vs_parameter
+```
+
+### Fast models
+
+```python
+mrl.single_mrr_thru_fast_batch
+mrl.single_mrr_add_drop_fast
+mrl.compute_resonance_metrics_fast
+mrl.compute_peak_metrics_fast
+mrl.monte_carlo_ring_tolerance_fast
+mrl.sfwm_pair_rate_relative_fast
+```
+
+### Nonlinear
+
+```python
+mrl.KerrCavityParams
+mrl.kerr_hysteresis
+mrl.kerr_through_power
+```
+
+### Quantum
+
+```python
+mrl.SFWMParams
+mrl.sfwm_pair_rate_relative
+mrl.sfwm_joint_spectral_amplitude_toy
+mrl.heralded_purity_from_jsa
+```
 
 ---
 
-## Notes on nonlinear and quantum modules
+## Validation
 
-The nonlinear and quantum modules are deliberately reduced models:
+The current release passes:
 
-- `nonlinear.py` gives a steady-state single-mode Kerr cavity model, not a full Lugiato-Lefever solver.
-- `quantum.py` gives SFWM scaling and toy joint-spectral-amplitude tools, not an absolute calibrated photon-pair-source simulator.
+```text
+126 passed
+```
 
-They are useful for design trends, teaching, and early-stage research exploration. Full calibrated predictions should be benchmarked against experiment or higher-fidelity solvers.
+Test categories include:
+
+- core models
+- transfer functions
+- material backends
+- resonance metrics
+- plotting smoke tests
+- fast accelerated utilities
+- public API consistency
+- publishability checks
+
+Run:
+
+```bash
+PYTHONPATH=$PWD python3 -m pytest
+```
 
 ---
 
-## Recommended external tools
+## Limitations
 
-`microringlib` is complementary to:
+MicroringLib is intentionally lightweight and physically interpretable. Current limitations include:
 
-- **gdsfactory** for layout and PDK workflows,
-- **Meep** for open-source FDTD,
-- **Tidy3D** for Python/cloud FDTD workflows,
-- **SAX / Simphony** for S-parameter circuit simulation.
+- scalar effective-index approximation
+- no built-in full-vector eigenmode solver
+- coupling coefficients are user-specified rather than geometry-derived
+- nonlinear and quantum modules are reduced models
+- no calibrated full Lugiato–Lefever comb solver yet
+- material database wrappers depend on optional external packages
+
+For high-fidelity electromagnetic design, use MicroringLib alongside tools such as Meep, Tidy3D, Lumerical, gdsfactory, SAX, or Simphony.
+
+---
+
+## Roadmap
+
+Planned improvements:
+
+- geometry-to-coupling calibration
+- optional mode-solver integration
+- improved material database support
+- full documentation site
+- benchmark suite
+- gdsfactory/SAX interoperability
+- calibrated nonlinear and thermal modules
+- improved inverse-design examples
+- full LLE-style comb solver
+
+---
+
+## Citation
+
+If you use MicroringLib in research, please cite the repository:
+
+```bibtex
+@software{keskinoglu_microringlib_2026,
+  author = {Keskinoglu, Elbek J.},
+  title = {MicroringLib: A Physics-First Python Library for Integrated Microring Photonics},
+  year = {2026},
+  url = {https://github.com/ElbekJK/microringlib}
+}
+```
+
+---
+
+## Selected Theory References
+
+- A. Yariv, “Universal relations for coupling of optical power between microresonators and dielectric waveguides,” *Electronics Letters*, 2000.
+- B. E. Little et al., “Microring resonator channel dropping filters,” *Journal of Lightwave Technology*, 1997.
+- W. Bogaerts et al., “Silicon microring resonators,” *Laser & Photonics Reviews*, 2012.
+- H. A. Haus, *Waves and Fields in Optoelectronics*, Prentice Hall.
+- G. P. Agrawal, *Nonlinear Fiber Optics*, Academic Press.
+- L. G. Helt, M. Liscidini, and J. E. Sipe, “How does it scale? Comparing quantum and classical nonlinear optical processes in integrated devices,” *JOSA B*, 2012.
+- A. F. Oskooi et al., “Meep: A flexible free-software package for electromagnetic simulations by the FDTD method,” *Computer Physics Communications*, 2010.
 
 ---
 
@@ -308,6 +734,10 @@ MIT License.
 
 ---
 
-## Citation
+## Author
 
-If you use this package in research, please cite the GitHub repository and the standard microring/coupled-mode references relevant to your work, such as Yariv, Little et al., Bogaerts et al., Haus, Agrawal, and Helt/Liscidini/Sipe-style SFWM scaling literature.
+**Elbek J. Keskinoglu**  
+Email: `ejkeskinoglu@connect.ust.hk`
+
+Repository:  
+https://github.com/ElbekJK/microringlib
