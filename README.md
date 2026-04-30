@@ -117,15 +117,15 @@ MicroringLib avoids these problems by enforcing core constraints directly.
 
 For a lossless coupler:
 
-\[
+$$
 |t|^2 + |\kappa|^2 = 1
-\]
+$$
 
 MicroringLib constructs couplers from the power coupling coefficient:
 
-\[
+$$
 K = |\kappa|^2
-\]
+$$
 
 ```python
 c = mrl.Coupler.from_power_coupling(0.12)
@@ -147,9 +147,9 @@ Example output:
 
 For passive add-drop rings:
 
-\[
+$$
 P_{\mathrm{thru}}(\lambda) + P_{\mathrm{drop}}(\lambda) \le 1
-\]
+$$
 
 Example result:
 
@@ -187,13 +187,13 @@ Passes passive constraint: True
 
 MicroringLib extracts physically meaningful quantities:
 
-\[
+$$
 Q_{\mathrm{loaded}} = \frac{\lambda_0}{\Delta \lambda_{\mathrm{FWHM}}}
-\]
+$$
 
-\[
+$$
 \mathcal{F} = \frac{\mathrm{FSR}}{\Delta \lambda_{\mathrm{FWHM}}}
-\]
+$$
 
 Example output:
 
@@ -217,17 +217,17 @@ The coupling coefficient \(K = |\kappa|^2\) controls the resonance linewidth and
 
 As coupling increases:
 
-\[
+$$
 K \uparrow
 \quad \Rightarrow \quad
 \Delta \lambda_{\mathrm{FWHM}} \uparrow
-\]
+$$
 
-\[
+$$
 K \uparrow
 \quad \Rightarrow \quad
 Q_{\mathrm{loaded}} \downarrow
-\]
+$$
 
 Example sweep:
 
@@ -248,9 +248,9 @@ K = 0.080 -> Loaded Q ≈ 10028
 
 MicroringLib supports thermo-optic tuning through:
 
-\[
+$$
 n(T) = n_0 + \frac{dn}{dT}(T - T_0)
-\]
+$$
 
 Example tracked resonance shift:
 
@@ -270,9 +270,9 @@ This demonstrates physically realistic positive thermo-optic redshift for a sili
 
 The group delay is computed from the field phase:
 
-\[
+$$
 \tau_g = -\frac{d\phi}{d\omega}
-\]
+$$
 
 Example result:
 
@@ -346,13 +346,13 @@ The accelerated utilities can run large Monte Carlo tolerance studies.
 
 Example perturbations:
 
-\[
+$$
 R \rightarrow R + \delta R
-\]
+$$
 
-\[
+$$
 n_{\mathrm{Si}} \rightarrow n_{\mathrm{Si}} + \delta n
-\]
+$$
 
 Fast vectorized example:
 
@@ -377,13 +377,13 @@ ER std:  1.53 dB
 
 A ring modulator shifts the resonance relative to a fixed laser:
 
-\[
+$$
 \Delta n_{\mathrm{eff}}
 \rightarrow
 \Delta \lambda_{\mathrm{res}}
 \rightarrow
 \Delta P_{\mathrm{thru}}
-\]
+$$
 
 Example result:
 
@@ -407,11 +407,11 @@ MicroringLib includes reduced single-mode Kerr cavity tools.
 
 The reduced steady-state model is:
 
-\[
+$$
 U =
 \frac{\kappa_{\mathrm{ex}}P_{\mathrm{in}}}
 {(\kappa/2)^2 + (\Delta - gU)^2}
-\]
+$$
 
 Example result:
 
@@ -437,11 +437,11 @@ MicroringLib includes reduced spontaneous four-wave mixing scaling tools.
 
 A simplified relative trend is:
 
-\[
+$$
 R_{\mathrm{pair}}
 \propto
 \gamma^2 P_p^2 \frac{Q^3}{R^2}
-\]
+$$
 
 Example SiC ring result:
 
@@ -527,15 +527,15 @@ mrl.PyOptikMaterial(...)
 
 Complex refractive index:
 
-\[
+$$
 \tilde{n}(\lambda,T) = n(\lambda,T) + ik(\lambda,T)
-\]
+$$
 
 Material absorption:
 
-\[
+$$
 \alpha_{\mathrm{power}}(\lambda) = \frac{4\pi k(\lambda)}{\lambda}
-\]
+$$
 
 This allows simulations to include wavelength-dependent dispersion and absorption.
 
