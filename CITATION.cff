@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+title: "microringlib: Physics-first microring photonics simulation in Python"
+message: "If you use microringlib in research, please cite this software repository."
+type: software
+authors:
+  - family-names: "Keskinoglu"
+    given-names: "Elbek J"
+email: "ejkeskinoglu@connect.ust.hk"
+repository-code: "https://github.com/ElbekJK/microringlib"
+license: MIT
+version: "1.1.0"
+keywords:
+  - photonics
+  - microring resonator
+  - silicon photonics
+  - nonlinear optics
+  - quantum optics

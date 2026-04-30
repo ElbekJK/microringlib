@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "microringlib"
+version = "1.1.0"
+description = "Physics-first and accelerated photonic microring resonator simulation library"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Elbek J Keskinoglu", email = "ejkeskinoglu@connect.ust.hk"}
+]
+maintainers = [
+    {name = "Elbek J Keskinoglu", email = "ejkeskinoglu@connect.ust.hk"}
+]
+dependencies = [
+    "numpy>=1.22",
+    "scipy>=1.9",
+    "matplotlib>=3.6"
+]
+keywords = ["photonics", "microring", "silicon-photonics", "waveguide", "optics", "simulation", "nonlinear-optics", "quantum-optics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+
+[project.optional-dependencies]
+materials = [
+    "refractiveindex>=0.0.7",
+    "PyOptik>=1.0.0",
+]
+dev = [
+    "pytest>=7",
+    "build>=1",
+    "twine>=5",
+]
+
+[project.urls]
+Homepage = "https://github.com/ElbekJK/microringlib"
+Repository = "https://github.com/ElbekJK/microringlib"
+Issues = "https://github.com/ElbekJK/microringlib/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["microringlib*"]
