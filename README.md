@@ -159,7 +159,7 @@ min(P_thru + P_drop) = 0.97031454
 Passes passive constraint: True
 ```
 
-![Add-drop passive response](docs/figures/real_life_microring_response.png)
+![Add-drop passive response](/real_life_microring_response.png)
 
 ---
 
