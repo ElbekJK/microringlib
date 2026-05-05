@@ -1,0 +1,10 @@
+include README.md
+include LICENSE
+include CITATION.cff
+recursive-include docs *.md
+recursive-include examples *.py
+recursive-include tests *.py
+global-exclude __pycache__/*
+global-exclude *.py[cod]
+global-exclude .pytest_cache/*
+global-exclude *.egg-info/*

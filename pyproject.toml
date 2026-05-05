@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "microringlib"
+version = "1.1.0"
+description = "Physics-first microring resonator simulation tools for integrated photonics"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  {name = "Elbek J Keskinoglu", email = "ejkeskinoglu@connect.ust.hk"}
+]
+keywords = [
+  "integrated photonics",
+  "microring resonator",
+  "silicon photonics",
+  "4H-SiC",
+  "transfer matrix",
+  "scattering matrix",
+  "FDE",
+  "FDTD",
+  "MEEP",
+  "modesolverpy",
+  "nonlinear optics",
+  "quantum photonics"
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Physics"
+]
+dependencies = [
+  "numpy>=1.23",
+  "scipy>=1.9",
+  "matplotlib>=3.6",
+  "pyyaml>=6.0"
+]
+
+[project.optional-dependencies]
+accel = ["numba>=0.58"]
+fde = ["modesolverpy"]
+materials = ["refractiveindex", "PyOptik"]
+test = ["pytest>=7"]
+dev = ["pytest>=7", "build>=1.2", "twine>=5.0", "ruff>=0.5"]
+publication = ["pandas>=1.5", "numba>=0.58", "refractiveindex", "PyOptik"]
+fdtd = []
+
+[project.urls]
+Homepage = "https://github.com/ElbekJK/microringlib"
+Repository = "https://github.com/ElbekJK/microringlib"
+Issues = "https://github.com/ElbekJK/microringlib/issues"
+PyPI = "https://pypi.org/project/microringlib/"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["microringlib", "microringlib.*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
